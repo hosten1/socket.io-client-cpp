@@ -13,11 +13,28 @@
 #include <mutex>
 #include <cmath>
 #include <algorithm>
+
+
+
+#if 0
+#include <cstring> // 用于 strrchr
+// 定义宏 __FILENAME__ 提取文件名（适用于 Windows 和其他平台）
+#ifdef _WIN32
+  #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+  #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+// 定义日志宏，接收日志内容作为参数
+#define LOG_INFO(msg) \
+    std::cout << __FILENAME__ << ":" << __LINE__ << " " << msg << std::endl;
 // Comment this out to disable handshake logging to stdout
 #if DEBUG || _DEBUG
 #define LOG(x) std::cout << x
 #else
 #define LOG(x)
+#endif
+#else
+#define LOG_INFO(msg) ((void)0)
 #endif
 
 #if SIO_TLS
@@ -57,9 +74,9 @@ namespace sio
     {
         using websocketpp::log::alevel;
 #if SIO_TLS
-            std::cout << __FILE__<< ":"<<__LINE__ << " lym client_impl::client_impl(SIO_TLS) m_base_url:"<<uri<< std::endl;
+            LOG_INFO(" lym client_impl::client_impl(SIO_TLS) m_base_url:"<<uri);
 #else
-    std::cout << __FILE__":"<<__LINE__<<  " lym client_impl::client_impl(no SIO_TLS) m_base_url:"<<uri<< std::endl;
+            LOG_INFO(" lym client_impl::client_impl(no SIO_TLS) m_base_url:"<<uri);
 #endif
 
 #ifndef DEBUG
@@ -92,7 +109,6 @@ namespace sio
     template<typename client_type>
     void client_impl<client_type>::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers)
     {
-        std::cout << __FILE__<<  " lym client_impl::connect() uri:"<<uri<< std::endl;
         if(m_reconn_timer)
         {
             m_reconn_timer->cancel();
@@ -646,7 +662,7 @@ failed:
     typedef websocketpp::lib::shared_ptr<asio::ssl::context> context_ptr;
     static context_ptr on_tls_init(connection_hdl conn)
     {
-        std::cout <<  "lym   on_tls_init"<< std::endl;
+        LOG_INFO(" lym client_impl::on_tls_init()");
         context_ptr ctx = context_ptr(new  asio::ssl::context(asio::ssl::context::tls));
         asio::error_code ec;
         ctx->set_options(asio::ssl::context::default_workarounds |

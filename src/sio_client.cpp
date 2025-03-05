@@ -15,12 +15,11 @@ namespace sio
     client::client():
         m_impl(new client_impl<client_type_no_tls>())
     {
-        std::cout << __FILE__<<  " lym client::client_impl<client_type_no_tls>()"<< std::endl;
+      
     }
 
     client::client(const std::string& uri)
     {
-        std::cout << __FILE__<<  " lym client::client_impl<client_type_no_tls>() uri "<< uri<< std::endl;
         if(!client_impl_base::is_tls(uri))
         {
             m_impl = new client_impl<client_type_no_tls>(uri);
@@ -90,7 +89,6 @@ namespace sio
 
     void client::connect(const std::string& uri)
     {
-        std::cout << __FILE__<<  " lym client::connect() uri:"<<uri<< std::endl;
         m_impl->connect(uri, {}, {});
     }
 

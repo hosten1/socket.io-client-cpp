@@ -9,3 +9,4 @@ install_manifest.txt
 libsioclient.a
 examples/iOS/SioChatDemo/.DS_Store
 .DS_Store
+.vscode/settings.json
