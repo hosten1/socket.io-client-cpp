@@ -2,6 +2,11 @@
 #define SIO_SOCKET_H
 #include "sio_message.h"
 #include <functional>
+
+#ifdef emit
+#undef emit
+#endif
+
 namespace sio
 {
     class event_adapter;
@@ -70,7 +75,10 @@ namespace sio
         
         void off_error();
 
-        void emit(std::string const& name, message::list const& msglist = nullptr, std::function<void (message::list const&)> const& ack = nullptr);
+        void emit(std::string const& name,
+                  message::list const& msglist = message::list(),
+                  std::function<void(message::list const&)> const& ack = std::function<void(message::list const&)>());
+
         
         std::string const& get_namespace() const;
         

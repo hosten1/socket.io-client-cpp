@@ -56,7 +56,14 @@ namespace sio
         m_reconn_made(0)
     {
         using websocketpp::log::alevel;
+#if SIO_TLS
+            std::cout << __FILE__<< ":"<<__LINE__ << " lym client_impl::client_impl(SIO_TLS) m_base_url:"<<uri<< std::endl;
+#else
+    std::cout << __FILE__":"<<__LINE__<<  " lym client_impl::client_impl(no SIO_TLS) m_base_url:"<<uri<< std::endl;
+#endif
+
 #ifndef DEBUG
+
         m_client.clear_access_channels(alevel::all);
         m_client.set_access_channels(alevel::connect|alevel::disconnect|alevel::app);
 #endif
@@ -85,6 +92,7 @@ namespace sio
     template<typename client_type>
     void client_impl<client_type>::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers)
     {
+        std::cout << __FILE__<<  " lym client_impl::connect() uri:"<<uri<< std::endl;
         if(m_reconn_timer)
         {
             m_reconn_timer->cancel();
@@ -121,7 +129,7 @@ namespace sio
             string query_str_value=encode_query_string(it->second);
             query_str.append(query_str_value);
         }
-        m_query_string=move(query_str);
+        m_query_string=std::move(query_str);
 
         m_http_headers = headers;
 
@@ -638,12 +646,19 @@ failed:
     typedef websocketpp::lib::shared_ptr<asio::ssl::context> context_ptr;
     static context_ptr on_tls_init(connection_hdl conn)
     {
+        std::cout <<  "lym   on_tls_init"<< std::endl;
         context_ptr ctx = context_ptr(new  asio::ssl::context(asio::ssl::context::tls));
         asio::error_code ec;
         ctx->set_options(asio::ssl::context::default_workarounds |
-                         asio::ssl::context::no_tlsv1 |
-                         asio::ssl::context::no_tlsv1_1 |
+                         asio::ssl::context::no_sslv2 |
+                         asio::ssl::context::no_sslv3 |
                          asio::ssl::context::single_dh_use,ec);
+        // 禁用证书验证
+        ctx->set_verify_mode(asio::ssl::verify_none);
+//        / 设置验证回调，始终返回 true，忽略任何验证错误
+        ctx->set_verify_callback([](bool preverified,asio::ssl::verify_context& ctx) -> bool {
+                    return true;
+                });
         if(ec)
         {
             cerr<<"Init tls failed,reason:"<< ec.message()<<endl;
